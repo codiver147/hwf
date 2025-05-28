@@ -1,9 +1,16 @@
 name: hwf-app
+region: fra
 static_sites:
-  - name: hwf-app
+  - build_command: |
+      npm install
+      npm run build
+    environment_slug: node-js
     github:
-      repo: hwf-app
       branch: main
+      deploy_on_push: true
+      repo: supdeocean/hwf.git
+    name: hwf-app
+    error_document: index.html
     routes:
       - path: /
         source_dir: /
