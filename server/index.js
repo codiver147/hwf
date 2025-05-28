@@ -48,10 +48,14 @@ app.listen(PORT, () => {
 
 const path = require('path');
 
-// Servir les fichiers statiques de Vite (build React)
-app.use(express.static(path.join(__dirname, 'dist')));
+// ✅ Corriger le chemin pour aller dans le dossier parent (../dist)
+const distPath = path.join(__dirname, '..', 'dist');
 
-// Rediriger toutes les routes inconnues vers index.html (SPA support)
+// ✅ Servir les fichiers statiques buildés par Vite
+app.use(express.static(distPath));
+
+// ✅ Rediriger toutes les routes (React Router) vers index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(distPath, 'index.html'));
 });
+
