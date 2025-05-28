@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: [
+      'hwf-app-ekbw6.ondigitalocean.app',
+      'localhost',
+    ],
   },
   plugins: [
     react(),
