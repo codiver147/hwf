@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
+    mode === 'production' &&
     componentTagger(),
   ].filter(Boolean),
   resolve: {
