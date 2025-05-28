@@ -45,3 +45,13 @@ app.use('/api/skills', require('./routes/skills'));
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+const path = require('path');
+
+// Servir les fichiers statiques de Vite (build React)
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Rediriger toutes les routes inconnues vers index.html (SPA support)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
