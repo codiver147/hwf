@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "serve dist",
+    "start": "node server/index.js",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
