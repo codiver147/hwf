@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite", // Mode développement
-    "build": "vite build", // Commande pour construire l'application
-    "start": "serve dist", // Commande pour servir les fichiers construits dans "dist"
-    "build:dev": "vite build --mode development", // Optionnel : construction pour dev
+    "dev": "vite",
+    "build": "vite build",
+    "start": "serve dist",
+    "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
   }
