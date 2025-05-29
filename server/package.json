@@ -1,7 +1,7 @@
 {
   "name": "hwf-donation-server",
   "version": "1.0.0",
-  "description": "Node.js Express server for HWF Donation Management System",
+  "description": "Node.js Express server for Helping With Furniture",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

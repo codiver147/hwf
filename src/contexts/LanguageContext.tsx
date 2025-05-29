@@ -136,7 +136,7 @@ const translations = {
   en: {
     // Dashboard
     'dashboard.title': 'Dashboard',
-    'dashboard.overview': 'HWF Donation Management System Overview',
+    'dashboard.overview': 'Helping With Furniture',
     'dashboard.totalClients': 'Total Clients',
     'dashboard.activeVolunteers': 'Active Volunteers',
     'dashboard.inventoryItems': 'Inventory Items',

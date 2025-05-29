@@ -91,7 +91,7 @@ export default function Login() {
 
         toast({
           title: "Login successful",
-          description: `Welcome ${userRole === 'superadmin' ? 'Administrator' : 'Volunteer'} to the HWF Donation Management System`,
+          description: `Welcome ${userRole === 'superadmin' ? 'Administrator' : 'Volunteer'} to the Helping With Furniture`,
         });
         
         navigate("/");
@@ -141,7 +141,7 @@ export default function Login() {
               Welcome Back
             </CardTitle>
             <CardDescription className="text-center">
-              Sign in to the HWF Donation Management System
+              Sign in to the Helping With Furniture
             </CardDescription>
           </CardHeader>
           <CardContent>
