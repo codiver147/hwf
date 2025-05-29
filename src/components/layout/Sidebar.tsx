@@ -64,7 +64,7 @@ export function Sidebar() {
       >
         {/* Logo area */}
         <div className="px-6 py-8 bg-hwf-purple text-white">
-          <h1 className="text-2xl font-bold">HWF Donations</h1>
+          <h1 className="text-2xl font-bold">Helping With Furniture</h1>
           <p className="text-sm opacity-80">Management System</p>
         </div>
 

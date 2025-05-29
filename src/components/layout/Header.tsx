@@ -47,7 +47,7 @@ export function Header() {
     <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-hwf-dark md:hidden">
-          HWF Donations
+          Helping With Furniture
         </h1>
         <div className="flex-1 md:ml-64"></div>
         <div className="flex items-center space-x-3">
