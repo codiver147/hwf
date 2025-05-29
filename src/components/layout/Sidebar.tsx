@@ -103,7 +103,7 @@ export function Sidebar() {
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 bg-gray-50">
           <p className="text-xs text-center text-gray-500">
-            &copy; {new Date().getFullYear()} HWF Donation System
+            &copy; {new Date().getFullYear()} Helping With Furniture
           </p>
         </div>
       </div>
