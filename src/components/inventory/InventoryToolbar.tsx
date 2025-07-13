@@ -1,7 +1,6 @@
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface InventoryToolbarProps {
@@ -24,10 +23,6 @@ export function InventoryToolbar({ searchQuery, onSearchChange }: InventoryToolb
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <Button variant="outline">
-        <Filter className="mr-2 h-4 w-4" />
-        {t('common.filters')}
-      </Button>
     </div>
   );
 }

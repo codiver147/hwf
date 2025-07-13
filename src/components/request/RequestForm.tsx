@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +12,9 @@ import { ScheduleSelect } from "./form/ScheduleSelect";
 import { ProductSelection } from "./ProductSelection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { TeamSelect } from "./form/TeamSelect";
+import { MultiTeamSelect } from "./form/MultiTeamSelect";
 import { VolunteerSelect } from "./form/VolunteerSelect";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Product {
   id: number;
@@ -28,8 +30,8 @@ interface SelectedProduct extends Product {
 
 const requestSchema = z.object({
   clientId: z.string().min(1, "Client requis"),
-  teamId: z.string().optional(),
-  volunteerId: z.string().min(1, "Bénévole requis"),
+  teamIds: z.array(z.string()).min(1, "Au moins une équipe requise"),
+  volunteerId: z.string().optional(),
   status: z.string().min(1, "Statut requis"),
   date: z.date().optional(),
   time: z.string().optional(),
@@ -47,17 +49,22 @@ interface RequestFormProps {
 }
 
 export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [activeTab, setActiveTab] = useState("details");
 
   const form = useForm<RequestFormValues>({
     resolver: zodResolver(requestSchema),
-    defaultValues: initialData || {
+    defaultValues: {
       status: "new",
       priority: "medium",
-      teamId: "",
+      teamIds: [],
       volunteerId: "",
+      clientId: "",
+      location: "",
+      description: "",
+      ...initialData,
     },
   });
 
@@ -79,7 +86,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
 
   const handleFormSubmit = (data: RequestFormValues) => {
     if (selectedProducts.length === 0) {
-      toast.error("Veuillez sélectionner au moins un produit", {
+      toast.error(t('request.errorAdding'), {
         style: {
           backgroundColor: "#fee2e2",
           border: "1px solid #ef4444",
@@ -102,8 +109,8 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
         <form onSubmit={form.handleSubmit(handleFormSubmit)}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="details">Détails de la requête</TabsTrigger>
-              <TabsTrigger value="products">Sélection des produits</TabsTrigger>
+              <TabsTrigger value="details">{t('request.details')}</TabsTrigger>
+              <TabsTrigger value="products">{t('request.products')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="details" className="space-y-4">
@@ -111,7 +118,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                 <CardContent className="pt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <ClientSelect form={form} />
-                    <TeamSelect form={form} />
+                    <MultiTeamSelect form={form} />
                     <VolunteerSelect form={form} />
                     <RequestDetails form={form} />
                     <ScheduleSelect form={form} />
@@ -125,7 +132,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                   variant="outline" 
                   onClick={() => setActiveTab("products")}
                 >
-                  Continuer vers la sélection de produits
+                  {t('request.continueProducts')}
                 </Button>
               </div>
             </TabsContent>
@@ -143,14 +150,14 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                   variant="outline" 
                   onClick={() => setActiveTab("details")}
                 >
-                  Retour aux détails
+                  {t('request.backToDetails')}
                 </Button>
                 
                 <Button 
                   type="submit" 
                   className="bg-hwf-purple hover:bg-hwf-purple/90"
                 >
-                  {initialData ? "Mettre à jour la Requête" : "Créer la Requête"}
+                  {initialData ? t('request.update') : t('request.create')}
                 </Button>
               </div>
             </TabsContent>

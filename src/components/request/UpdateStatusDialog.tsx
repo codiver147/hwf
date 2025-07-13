@@ -56,8 +56,8 @@ export function UpdateStatusDialog({
       }
       
       toast({
-        title: "Status Updated",
-        description: `Request status has been updated to ${status}`,
+        title: t('common.success'),
+        description: t('request.statusUpdated'),
       });
       
       onStatusUpdate();
@@ -65,8 +65,8 @@ export function UpdateStatusDialog({
     } catch (error) {
       console.error('Error updating status:', error);
       toast({
-        title: "Error",
-        description: "Failed to update request status",
+        title: t('common.error'),
+        description: t('request.errorUpdatingStatus'),
         variant: "destructive",
       });
     } finally {
@@ -80,14 +80,14 @@ export function UpdateStatusDialog({
         <DialogHeader>
           <DialogTitle>{t('actions.updateStatus')}</DialogTitle>
           <DialogDescription>
-            Choose a new status for this request
+            {t('request.chooseNewStatus')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger>
-              <SelectValue placeholder="Select new status" />
+              <SelectValue placeholder={t('request.selectNewStatus')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="new">{t('status.new')}</SelectItem>
@@ -107,7 +107,7 @@ export function UpdateStatusDialog({
             disabled={isUpdating || status === currentStatus}
             className="bg-hwf-purple hover:bg-hwf-purple-dark"
           >
-            {isUpdating ? "Updating..." : t('actions.update')}
+            {isUpdating ? t('common.saving') : t('actions.update')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,9 +2,11 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export const formatAvailability = (availabilityObj: Record<string, string> | null): string => {
-  if (!availabilityObj || Object.keys(availabilityObj).length === 0) return "Non spécifiée";
+  const { language, t } = useLanguage();
   
-  const { language } = useLanguage();
+  if (!availabilityObj || Object.keys(availabilityObj).length === 0) {
+    return t('common.none');
+  }
   
   const dayTranslations: Record<string, Record<string, string>> = {
     fr: {
@@ -72,7 +74,11 @@ export const formatAvailability = (availabilityObj: Record<string, string> | nul
 };
 
 export const formatSkills = (skills: string[] | any[]): string => {
-  if (!skills || !Array.isArray(skills) || skills.length === 0) return "Aucun";
+  const { t } = useLanguage();
+  
+  if (!skills || !Array.isArray(skills) || skills.length === 0) {
+    return t('common.none');
+  }
   
   // Handle case where skills might be an array of objects with skill_name property
   if (typeof skills[0] === 'object' && skills[0]?.skill_name) {

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { useEffect, useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
@@ -34,7 +35,6 @@ import NotFound from "./pages/NotFound";
 import { Layout } from "./components/layout/Layout";
 import Skills from "./pages/Skills";
 import AddSkill from "./pages/AddSkill";
-import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 

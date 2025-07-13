@@ -1,10 +1,10 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type ActivityStatus = "completed" | "pending" | "processing" | "new" | "cancelled" | "in progress";
 
@@ -15,13 +15,14 @@ interface Activity {
   time: string;
 }
 
+
 async function fetchRecentActivity() {
-  // First, fetch the recent requests
+  // First, fetch the recent requests - limit to 8
   const { data: requests, error } = await supabase
     .from('requests')
     .select('id, status, updated_at, client_id')
     .order('updated_at', { ascending: false })
-    .limit(10);
+    .limit(8);
 
   if (error) throw error;
 
@@ -80,10 +81,20 @@ export function RecentActivity() {
     queryFn: fetchRecentActivity,
   });
 
+  
+let t;
+  try {
+    const { t: translateFn } = useLanguage();
+    t = translateFn;
+  } catch (error) {
+    // Fallback if LanguageProvider is not available
+    t = (key: string) => key;
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Activités Récentes</CardTitle>
+        <CardTitle>{t('dashboard.recentActivity')} </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (

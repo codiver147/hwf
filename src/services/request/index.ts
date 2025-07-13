@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { requestItemService } from "./requestItemService";
 import { baseRequestService } from "./baseRequestService";
 import { assignmentService } from "./assignmentService";
+import { multiTeamService } from "./multiTeamService";
 
 export const requestService = {
   // Use baseRequestService methods
@@ -32,6 +33,15 @@ export const requestService = {
       console.error('Error assigning team to request:', error);
       throw error;
     }
+  },
+
+  // New method for multiple teams
+  async assignMultipleTeamsToRequest(requestId: number, teamIds: number[]) {
+    return multiTeamService.assignMultipleTeamsToRequest(requestId, teamIds);
+  },
+
+  async getRequestTeams(requestId: number) {
+    return multiTeamService.getRequestTeams(requestId);
   },
 
   async assignVolunteerToRequest(requestId: number, volunteerId: number) {

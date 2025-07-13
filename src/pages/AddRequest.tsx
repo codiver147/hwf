@@ -19,10 +19,9 @@ export default function AddRequest() {
     try {
       console.log("Form data:", data);
 
-      // Format data for Supabase
+      // Format data for Supabase - Create request first
       const requestData = {
         client_id: parseInt(data.clientId),
-        team_id: data.teamId ? parseInt(data.teamId) : null,
         status: data.status,
         priority: data.priority,
         description: data.description,
@@ -34,6 +33,13 @@ export default function AddRequest() {
 
       // Create the request in Supabase
       const createdRequest = await requestService.createRequest(requestData);
+      
+      // Assign multiple teams to the request using the new junction table
+      if (data.teamIds && data.teamIds.length > 0) {
+        console.log("Assigning teams:", data.teamIds);
+        const teamIdsAsNumbers = data.teamIds.map((id: string) => parseInt(id));
+        await requestService.assignMultipleTeamsToRequest(createdRequest.id, teamIdsAsNumbers);
+      }
       
       // If there are products, associate them with the request
       if (data.products && data.products.length > 0) {
@@ -59,11 +65,11 @@ export default function AddRequest() {
       // Invalidate requests query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['requests'] });
       
-      toast.success("Requête créée avec succès");
+      toast.success(t('request.addSuccess'));
       navigate("/requests");
     } catch (error) {
       console.error('Error creating request:', error);
-      toast.error("Erreur lors de la création de la requête");
+      toast.error(t('request.errorAdding'));
     }
   };
 

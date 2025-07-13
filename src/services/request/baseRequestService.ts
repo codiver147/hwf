@@ -1,12 +1,45 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { RequestData } from "./types";
 
 export const baseRequestService = {
   async getRequests() {
     try {
       const { data, error } = await supabase
         .from('requests')
-        .select('*')
+        .select(`
+          *,
+          clients (
+            first_name,
+            last_name
+          ),
+          teams!fk_requests_team_id (
+            name
+          ),
+          request_volunteers (
+            volunteer_id,
+            volunteers!fk_request_volunteers_volunteer_id (
+              first_name,
+              last_name
+            )
+          ),
+          request_items (
+            inventory_item_id,
+            quantity,
+            status,
+            inventory_items (
+              name,
+              description,
+              category_id
+            )
+          ),
+          request_teams (
+            team_id,
+            teams (
+              id,
+              name
+            )
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -14,116 +47,10 @@ export const baseRequestService = {
         throw error;
       }
       
-      const requests = data || [];
-      
-      const enhancedRequests = await Promise.all(requests.map(async (request) => {
-        const [clientData, teamData, assignments, requestItems, request_volunteers] = await Promise.all([
-          request.client_id ? supabase
-            .from('clients')
-            .select('first_name, last_name')
-            .eq('id', request.client_id)
-            .maybeSingle() : { data: null },
-          
-          request.team_id ? supabase
-            .from('teams')
-            .select('name')
-            .eq('id', request.team_id)
-            .maybeSingle() : { data: null },
-          
-          supabase
-            .from('delivery_assignments')
-            .select(`
-              id, 
-              scheduled_date, 
-              completed_date, 
-              status, 
-              notes,
-              volunteer_id
-            `)
-            .eq('request_id', request.id),
-          
-          supabase
-            .from('request_items')
-            .select('*, inventory_item_id')
-            .eq('request_id', request.id),
-          
-          supabase
-            .from('request_volunteers')
-            .select(`
-              *,
-              volunteer_id
-            `)
-            .eq('request_id', request.id)
-        ]);
-
-        const assignmentsWithVolunteers = assignments.data ? await Promise.all(
-          assignments.data.map(async (assignment) => {
-            if (assignment.volunteer_id) {
-              const { data: volunteerData } = await supabase
-                .from('volunteers')
-                .select('id, first_name, last_name')
-                .eq('id', assignment.volunteer_id)
-                .maybeSingle();
-              
-              return {
-                ...assignment,
-                volunteers: volunteerData
-              };
-            }
-            return assignment;
-          })
-        ) : [];
-
-        const requestItemsWithDetails = requestItems.data ? await Promise.all(
-          requestItems.data.map(async (item) => {
-            if (item.inventory_item_id) {
-              const { data: itemData } = await supabase
-                .from('inventory_items')
-                .select('name, description')
-                .eq('id', item.inventory_item_id)
-                .maybeSingle();
-              
-              return {
-                ...item,
-                inventory_items: itemData
-              };
-            }
-            return item;
-          })
-        ) : [];
-
-        const volunteersWithDetails = request_volunteers.data ? await Promise.all(
-          request_volunteers.data.map(async (rv) => {
-            if (rv.volunteer_id) {
-              const { data: volunteerData } = await supabase
-                .from('volunteers')
-                .select('id, first_name, last_name')
-                .eq('id', rv.volunteer_id)
-                .maybeSingle();
-              
-              return {
-                ...rv,
-                volunteers: volunteerData
-              };
-            }
-            return rv;
-          })
-        ) : [];
-        
-        return {
-          ...request,
-          clients: clientData.data,
-          teams: teamData.data,
-          delivery_assignments: assignmentsWithVolunteers || [],
-          request_items: requestItemsWithDetails || [],
-          request_volunteers: volunteersWithDetails || []
-        };
-      }));
-      
-      return enhancedRequests;
+      return data || [];
     } catch (error) {
       console.error('Error in getRequests:', error);
-      return []; 
+      throw error;
     }
   },
 
@@ -131,183 +58,177 @@ export const baseRequestService = {
     try {
       const { data, error } = await supabase
         .from('requests')
-        .select('*')
+        .select(`
+          *,
+          clients (
+            first_name,
+            last_name
+          ),
+          teams!fk_requests_team_id (
+            name
+          ),
+          request_volunteers (
+            volunteer_id,
+            volunteers!fk_request_volunteers_volunteer_id (
+              first_name,
+              last_name
+            )
+          ),
+          request_items (
+            inventory_item_id,
+            quantity,
+            status,
+            inventory_items (
+              name,
+              description,
+              category_id
+            )
+          ),
+          request_teams (
+            team_id,
+            teams (
+              id,
+              name
+            )
+          )
+        `)
         .eq('id', id)
-        .maybeSingle();
+        .single();
       
-      if (error) throw error;
-      if (!data) throw new Error(`Request with ID ${id} not found`);
+      if (error) {
+        console.error('Error fetching request by ID:', error);
+        throw error;
+      }
       
-      const [clientData, teamData, assignments, requestItems, request_volunteers] = await Promise.all([
-        data.client_id ? supabase
-          .from('clients')
-          .select('first_name, last_name')
-          .eq('id', data.client_id)
-          .maybeSingle() : { data: null },
-        
-        data.team_id ? supabase
-          .from('teams')
-          .select('name')
-          .eq('id', data.team_id)
-          .maybeSingle() : { data: null },
-        
-        supabase
-          .from('delivery_assignments')
-          .select(`
-            id, 
-            scheduled_date, 
-            completed_date, 
-            status, 
-            notes,
-            volunteer_id
-          `)
-          .eq('request_id', id),
-        
-        supabase
-          .from('request_items')
-          .select('*, inventory_item_id')
-          .eq('request_id', id),
-        
-        supabase
-          .from('request_volunteers')
-          .select(`
-            *,
-            volunteer_id
-          `)
-          .eq('request_id', id)
-      ]);
-
-      const assignmentsWithVolunteers = assignments.data ? await Promise.all(
-        assignments.data.map(async (assignment) => {
-          if (assignment.volunteer_id) {
-            const { data: volunteerData } = await supabase
-              .from('volunteers')
-              .select('id, first_name, last_name')
-              .eq('id', assignment.volunteer_id)
-              .maybeSingle();
-            
-            return {
-              ...assignment,
-              volunteers: volunteerData
-            };
-          }
-          return assignment;
-        })
-      ) : [];
-
-      const requestItemsWithDetails = requestItems.data ? await Promise.all(
-        requestItems.data.map(async (item) => {
-          if (item.inventory_item_id) {
-            const { data: itemData } = await supabase
-              .from('inventory_items')
-              .select('name, description')
-              .eq('id', item.inventory_item_id)
-              .maybeSingle();
-            
-            return {
-              ...item,
-              inventory_items: itemData
-            };
-          }
-          return item;
-        })
-      ) : [];
-
-      const volunteersWithDetails = request_volunteers.data ? await Promise.all(
-        request_volunteers.data.map(async (rv) => {
-          if (rv.volunteer_id) {
-            const { data: volunteerData } = await supabase
-              .from('volunteers')
-              .select('id, first_name, last_name')
-              .eq('id', rv.volunteer_id)
-              .maybeSingle();
-            
-            return {
-              ...rv,
-              volunteers: volunteerData
-            };
-          }
-          return rv;
-        })
-      ) : [];
-      
-      return {
-        ...data,
-        clients: clientData.data,
-        teams: teamData.data,
-        delivery_assignments: assignmentsWithVolunteers || [],
-        request_items: requestItemsWithDetails || [],
-        request_volunteers: volunteersWithDetails || []
-      };
+      return data;
     } catch (error) {
-      console.error('Error fetching request by ID:', error);
+      console.error('Error in getRequestById:', error);
       throw error;
     }
   },
 
-  async createRequest(request: Partial<RequestData>) {
+  async createRequest(requestData: any) {
     try {
       const { data, error } = await supabase
         .from('requests')
-        .insert(request)
+        .insert([requestData])
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating request:', error);
+        throw error;
+      }
+      
       return data;
     } catch (error) {
-      console.error('Error creating request:', error);
+      console.error('Error in createRequest:', error);
       throw error;
     }
   },
 
-  async updateRequest(id: number, request: Partial<RequestData>) {
+  async updateRequest(id: number, requestData: any) {
     try {
       const { data, error } = await supabase
         .from('requests')
-        .update(request)
+        .update(requestData)
         .eq('id', id)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating request:', error);
+        throw error;
+      }
+      
       return data;
     } catch (error) {
-      console.error('Error updating request:', error);
+      console.error('Error in updateRequest:', error);
       throw error;
     }
   },
 
   async deleteRequest(id: number) {
     try {
+      // First delete related records in the correct order
+      
+      // Delete delivery assignments
+      const { error: deliveryError } = await supabase
+        .from('delivery_assignments')
+        .delete()
+        .eq('request_id', id);
+      
+      if (deliveryError) {
+        console.error('Error deleting delivery assignments:', deliveryError);
+        throw deliveryError;
+      }
+
+      // Delete request items
+      const { error: itemsError } = await supabase
+        .from('request_items')
+        .delete()
+        .eq('request_id', id);
+      
+      if (itemsError) {
+        console.error('Error deleting request items:', itemsError);
+        throw itemsError;
+      }
+
+      // Delete request volunteers
+      const { error: volunteersError } = await supabase
+        .from('request_volunteers')
+        .delete()
+        .eq('request_id', id);
+      
+      if (volunteersError) {
+        console.error('Error deleting request volunteers:', volunteersError);
+        throw volunteersError;
+      }
+
+      // Delete request teams
+      const { error: teamsError } = await supabase
+        .from('request_teams')
+        .delete()
+        .eq('request_id', id);
+      
+      if (teamsError) {
+        console.error('Error deleting request teams:', teamsError);
+        throw teamsError;
+      }
+
+      // Finally delete the request itself
       const { error } = await supabase
         .from('requests')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting request:', error);
+        throw error;
+      }
     } catch (error) {
-      console.error('Error deleting request:', error);
+      console.error('Error in deleteRequest:', error);
       throw error;
     }
   },
 
-  async updateRequestStatus(id: number, status: string) {
+  async updateRequestStatus(requestId: number, status: string) {
     try {
       const { data, error } = await supabase
         .from('requests')
-        .update({ 
-          status,
-          ...(status === 'scheduled' ? { scheduled_at: new Date().toISOString() } : {})
-        })
-        .eq('id', id)
+        .update({ status })
+        .eq('id', requestId)
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating request status:', error);
+        throw error;
+      }
+      
       return data;
     } catch (error) {
-      console.error('Error updating request status:', error);
+      console.error('Error in updateRequestStatus:', error);
       throw error;
     }
   }

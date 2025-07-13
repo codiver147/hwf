@@ -5,6 +5,7 @@ import { UseFormReturn } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Client {
   id: number;
@@ -17,6 +18,7 @@ interface ClientSelectProps {
 }
 
 export const ClientSelect = ({ form }: ClientSelectProps) => {
+  const { t } = useLanguage();
   const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,27 +55,27 @@ export const ClientSelect = ({ form }: ClientSelectProps) => {
       name="clientId"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Client</FormLabel>
+          <FormLabel>{t('request.client')} *</FormLabel>
           <Select onValueChange={field.onChange} value={field.value}>
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un client" />
+                <SelectValue placeholder={t('request.selectClient')} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
               <div className="p-2">
                 <input
                   className="w-full rounded-md border border-input px-3 py-2 text-sm"
-                  placeholder="Rechercher un client..."
+                  placeholder={t('client.searchClient')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               
               {isLoading ? (
-                <SelectItem value="loading" disabled>Chargement...</SelectItem>
+                <SelectItem value="loading" disabled>{t('common.loading')}</SelectItem>
               ) : filteredClients.length === 0 ? (
-                <SelectItem value="empty" disabled>Aucun client trouvé</SelectItem>
+                <SelectItem value="empty" disabled>{t('client.noClientFound')}</SelectItem>
               ) : (
                 filteredClients.map((client) => (
                   <SelectItem key={client.id} value={client.id.toString()}>

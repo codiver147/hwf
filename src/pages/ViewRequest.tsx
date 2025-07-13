@@ -76,6 +76,19 @@ export default function ViewRequest() {
     );
   }
 
+  // Safely get client information with proper type checking
+  const clientInfo = request.clients;
+  let clientName = 'Client non assigné';
+  
+  if (clientInfo && typeof clientInfo === 'object' && !Array.isArray(clientInfo)) {
+    const clientObj = clientInfo as { first_name?: string; last_name?: string };
+    if ('first_name' in clientObj && 'last_name' in clientObj) {
+      const firstName = clientObj.first_name || '';
+      const lastName = clientObj.last_name || '';
+      clientName = `${firstName} ${lastName}`.trim() || 'Client non assigné';
+    }
+  }
+
   // Formater la date pour affichage
   const formattedDate = request.scheduled_at 
     ? format(new Date(request.scheduled_at), "dd/MM/yyyy HH:mm", { locale: fr })
@@ -87,7 +100,7 @@ export default function ViewRequest() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Requête #{request.id}</h1>
           <p className="text-muted-foreground">
-            Requête pour {request.clients?.first_name} {request.clients?.last_name}
+            Requête pour {clientName}
           </p>
           <p className="text-muted-foreground">
             Date planifiée: {formattedDate}

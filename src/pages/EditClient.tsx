@@ -10,6 +10,7 @@ import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function EditClient() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function EditClient() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   // Fetch client data
   const { data: client, isLoading, error } = useQuery({
@@ -32,15 +34,15 @@ export default function EditClient() {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       toast({
-        title: "Client updated",
-        description: "Client information has been successfully updated.",
+        title: t('client.updateSuccess'),
+        description: t('client.updateSuccess'),
       });
       navigate('/clients');
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update client. Please try again.",
+        title: t('common.error'),
+        description: t('client.errorUpdating'),
         variant: "destructive",
       });
     },
@@ -80,7 +82,7 @@ export default function EditClient() {
   }
 
   if (error) {
-    return <div className="text-red-500">Error loading client: {(error as Error).message}</div>;
+    return <div className="text-red-500">{t('common.error')}: {(error as Error).message}</div>;
   }
 
   // Transform client data to match the form structure
@@ -111,6 +113,7 @@ export default function EditClient() {
     numberOfAdults: client.number_of_adults || 1,
     numberOfChildren: client.number_of_children || 0,
     childrenAges: client.children_ages || "",
+    referenceOrganization: client.reference_organization || "",
   } : undefined;
   
   console.log("Prepared default values:", defaultValues);
@@ -119,22 +122,22 @@ export default function EditClient() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Edit Client</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('client.editClient')}</h1>
           <p className="text-muted-foreground">
-            Update client information
+            {t('pages.clients.manage')}
           </p>
         </div>
         <Button variant="outline" onClick={() => navigate("/clients")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Clients
+          {t('client.backToClients')}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Client Information</CardTitle>
+          <CardTitle>{t('pages.clients.information')}</CardTitle>
           <CardDescription>
-            Make changes to the client's information below
+            {t('pages.clients.manage')}
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -48,7 +48,7 @@ const Index = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <Card className="w-full max-w-4xl shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-hwf-purple">Welcome to Helping With Furniture</CardTitle>
+          <CardTitle className="text-3xl font-bold text-hwf-purple">Welcome to HWF Donations</CardTitle>
           <CardDescription>
             Manage your donation operations with our comprehensive system
           </CardDescription>
@@ -155,7 +155,7 @@ const Index = () => {
         </Tabs>
         
         <CardFooter className="flex justify-between bg-gray-50 mt-6">
-          <p className="text-sm text-gray-500">Helping With Furniture</p>
+          <p className="text-sm text-gray-500">HWF Donations Management System</p>
           <Button variant="link" size="sm" onClick={() => window.location.href = "/login"}>
             Admin Login
           </Button>

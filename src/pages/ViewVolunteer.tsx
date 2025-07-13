@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { deleteVolunteer, getVolunteerById } from "@/services/volunteerService";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatAvailability, formatSkills } from "@/utils/volunteerUtils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const fetchVolunteer = async (id: string) => {
   console.log(`Fetching volunteer with ID: ${id}`);
@@ -41,6 +43,7 @@ export default function ViewVolunteer() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   
   console.log(`Rendering ViewVolunteer component with ID: ${id}`);
   console.log("Authentication status:", isAuthenticated());
@@ -51,35 +54,33 @@ export default function ViewVolunteer() {
     retry: 1,
     meta: {
       onError: () => {
-        toast.error("Failed to load volunteer information");
+        toast.error(t('volunteer.errorLoading') || "Failed to load volunteer information");
       }
     },
-    enabled: !!id // Only run the query if we have an ID
+    enabled: !!id
   });
 
-  // Log the error for debugging purposes
   if (error) {
     console.error("Error in useQuery:", error);
   }
 
-  // If not authenticated, redirect to login
   useEffect(() => {
     if (!isAuthenticated()) {
       console.log("User not authenticated, redirecting to login");
-      toast.error("Please log in to view volunteer details");
+      toast.error(t('auth.loginError') || "Please log in to view volunteer details");
       navigate("/login");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, t]);
 
   const mutation = useMutation({
     mutationFn: deleteVolunteer,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['volunteers'] });
-      toast.success("Volunteer deleted successfully");
+      toast.success(t('volunteer.deleteSuccess'));
       navigate("/volunteers");
     },
     onError: () => {
-      toast.error("Failed to delete volunteer");
+      toast.error(t('volunteer.errorDeleting'));
     },
   });
 
@@ -112,20 +113,20 @@ export default function ViewVolunteer() {
     return (
       <div className="text-center text-red-500 p-6">
         <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
-        <p>Error loading volunteer information</p>
-        <p className="text-sm text-gray-500 mt-2">Please make sure you are logged in and have the necessary permissions.</p>
+        <p>{t('common.error')}</p>
+        <p className="text-sm text-gray-500 mt-2">{t('auth.loginError')}</p>
         <div className="flex justify-center gap-4 mt-4">
           <Button 
             variant="outline" 
             onClick={() => navigate("/volunteers")}
           >
-            Return to Volunteers
+            {t('header.backToVolunteers')}
           </Button>
           <Button 
             variant="default" 
             onClick={() => navigate("/login")}
           >
-            Go to Login
+            {t('auth.login')}
           </Button>
         </div>
       </div>
@@ -137,22 +138,20 @@ export default function ViewVolunteer() {
     return (
       <div className="text-center text-amber-500 p-6">
         <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
-        <p>Volunteer information not found</p>
+        <p>{t('volunteer.noVolunteerFound')}</p>
         <Button 
           variant="outline" 
           onClick={() => navigate("/volunteers")}
           className="mt-4"
         >
-          Return to Volunteers
+          {t('header.backToVolunteers')}
         </Button>
       </div>
     );
   }
 
-  // Log skills data for debugging
   console.log("Volunteer skills data:", volunteer.skills);
   
-  // Process skills data for display
   const processedSkills: string[] = Array.isArray(volunteer.skills)
     ? volunteer.skills.filter((s): s is string => typeof s === "string" && !!s)
     : [];
@@ -161,9 +160,9 @@ export default function ViewVolunteer() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Volunteer Details</h1>
+          <h1 className="text-2xl font-bold">{t('pages.volunteers.information')}</h1>
           <p className="text-muted-foreground">
-            View detailed information about this volunteer
+            {t('pages.volunteers.manage')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -172,21 +171,21 @@ export default function ViewVolunteer() {
             onClick={() => navigate("/volunteers")}
             className="flex items-center gap-2"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Volunteers
+            <ArrowLeft className="h-4 w-4" /> {t('header.backToVolunteers')}
           </Button>
           <Button 
             variant="outline" 
             onClick={() => navigate(`/volunteers/edit/${id}`)}
             className="flex items-center gap-2"
           >
-            <Pencil className="h-4 w-4" /> Edit
+            <Pencil className="h-4 w-4" /> {t('common.edit')}
           </Button>
           <Button 
             variant="destructive"
             className="flex items-center gap-2"
             onClick={handleDelete}
           >
-            <Trash2 className="h-4 w-4" /> Delete
+            <Trash2 className="h-4 w-4" /> {t('common.delete')}
           </Button>
         </div>
       </div>
@@ -198,14 +197,14 @@ export default function ViewVolunteer() {
               {volunteer.first_name} {volunteer.last_name}
             </h2>
             <Badge variant={volunteer.is_active ? "default" : "secondary"}>
-              {volunteer.is_active ? "Active" : "Inactive"}
+              {volunteer.is_active ? t('status.active') : t('status.inactive')}
             </Badge>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium mb-4">Contact Information</h3>
+                <h3 className="text-lg font-medium mb-4">{t('client.contactInformation')}</h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="h-4 w-4" />
@@ -213,15 +212,15 @@ export default function ViewVolunteer() {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="h-4 w-4" />
-                    <span>{volunteer.phone || "Not provided"}</span>
+                    <span>{volunteer.phone || t('common.none')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    <span>{volunteer.address || "Not provided"}</span>
+                    <span>{volunteer.address || t('common.none')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    <span>Joined: {volunteer.join_date ? new Date(volunteer.join_date).toLocaleDateString() : "Not provided"}</span>
+                    <span>{t('volunteer.joinDate')}: {volunteer.join_date ? new Date(volunteer.join_date).toLocaleDateString() : t('common.none')}</span>
                   </div>
                 </div>
               </div>
@@ -229,7 +228,7 @@ export default function ViewVolunteer() {
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium mb-4">Skills</h3>
+                <h3 className="text-lg font-medium mb-4">{t('volunteer.skills')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {processedSkills.length > 0 ? (
                     processedSkills.map((skill, index) =>
@@ -240,12 +239,12 @@ export default function ViewVolunteer() {
                       ) : null
                     )
                   ) : (
-                    <p className="text-muted-foreground">No skills listed</p>
+                    <p className="text-muted-foreground">{t('common.none')}</p>
                   )}
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-medium mb-4">Availability</h3>
+                <h3 className="text-lg font-medium mb-4">{t('volunteer.availability')}</h3>
                 <div className="text-muted-foreground">
                   {formatAvailability(
                     typeof volunteer.availability === 'string' && volunteer.availability
@@ -264,19 +263,19 @@ export default function ViewVolunteer() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              Delete Volunteer
+              {t('common.delete')} {t('pages.volunteers.title')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {volunteer.first_name} {volunteer.last_name}? This action cannot be undone.
+              {t('common.areYouSure')} {volunteer.first_name} {volunteer.last_name}? {t('request.deleteConfirmation')}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-500 hover:bg-red-600"
             >
-              Delete
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

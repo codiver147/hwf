@@ -5,12 +5,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RequestDetailsProps {
   form: UseFormReturn<any>;
 }
 
 export const RequestDetails = ({ form }: RequestDetailsProps) => {
+  const { t } = useLanguage();
   return (
     <>
       <FormField
@@ -18,18 +20,18 @@ export const RequestDetails = ({ form }: RequestDetailsProps) => {
         name="priority"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Priorité</FormLabel>
+            <FormLabel>{t('request.priority')}</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une priorité" />
+                  <SelectValue placeholder={t('request.selectPriority')} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="low">Basse</SelectItem>
-                <SelectItem value="medium">Moyenne</SelectItem>
-                <SelectItem value="high">Haute</SelectItem>
-                <SelectItem value="urgent">Urgente</SelectItem>
+                <SelectItem value="low">{t('priority.low')}</SelectItem>
+                <SelectItem value="medium">{t('priority.medium')}</SelectItem>
+                <SelectItem value="high">{t('priority.high')}</SelectItem>
+                <SelectItem value="urgent">{t('priority.urgent')}</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -42,18 +44,18 @@ export const RequestDetails = ({ form }: RequestDetailsProps) => {
         name="status"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Statut</FormLabel>
+            <FormLabel>{t('request.status')}</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un statut" />
+                  <SelectValue placeholder={t('request.selectStatus')} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="new">Nouveau</SelectItem>
-                <SelectItem value="in progress">En cours</SelectItem>
-                <SelectItem value="completed">Terminé</SelectItem>
-                <SelectItem value="cancelled">Annulé</SelectItem>
+                <SelectItem value="new">{t('status.new')}</SelectItem>
+                <SelectItem value="in progress">{t('status.inProgress')}</SelectItem>
+                <SelectItem value="completed">{t('status.completed')}</SelectItem>
+                <SelectItem value="cancelled">{t('status.cancelled')}</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -66,9 +68,9 @@ export const RequestDetails = ({ form }: RequestDetailsProps) => {
         name="location"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Adresse de livraison</FormLabel>
+            <FormLabel>{t('request.location')}</FormLabel>
             <FormControl>
-              <Input placeholder="Entrer l'adresse" {...field} />
+              <Input placeholder={t('request.enterLocation')} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -80,10 +82,10 @@ export const RequestDetails = ({ form }: RequestDetailsProps) => {
         name="description"
         render={({ field }) => (
           <FormItem className="col-span-2">
-            <FormLabel>Description</FormLabel>
+            <FormLabel>{t('request.description')}</FormLabel>
             <FormControl>
               <Textarea 
-                placeholder="Entrer les détails de la requête" 
+                placeholder={t('request.enterDescription')} 
                 className="min-h-[120px] resize-none" 
                 {...field} 
               />

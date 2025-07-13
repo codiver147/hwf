@@ -8,14 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { 
   Search, 
@@ -25,7 +17,6 @@ import {
   Edit2,
   Trash2
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { inventoryService } from "@/services/inventoryService";
 import { Tables } from "@/integrations/supabase/types";
@@ -38,6 +29,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 export default function Categories() {
   const navigate = useNavigate();
@@ -101,13 +94,51 @@ export default function Categories() {
     (category.description || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-hwf-purple border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
+  const columns: ColumnDef<Tables<'inventory_categories'>>[] = [
+    {
+      accessorKey: "name",
+      header: t('categories.name'),
+      cell: ({ row }) => (
+        <div className="flex items-center">
+          <Folder className="h-4 w-4 mr-2 text-muted-foreground" />
+          {row.original.name}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "description",
+      header: t('categories.description'),
+      cell: ({ row }) => (
+        <div className="max-w-xs truncate">
+          {row.original.description || '-'}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: t('common.actions'),
+      cell: ({ row }) => (
+        <div className="flex justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => navigate(`/categories/edit/${row.original.id}`)}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => openDeleteDialog(row.original)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -149,58 +180,13 @@ export default function Categories() {
             </Button>
           </div>
 
-          <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('categories.name')}</TableHead>
-                  <TableHead>{t('categories.description')}</TableHead>
-                  <TableHead className="text-right">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCategories.length > 0 ? (
-                  filteredCategories.map((category) => (
-                    <TableRow key={category.id}>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Folder className="h-4 w-4 mr-2 text-muted-foreground" />
-                          {category.name}
-                        </div>
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">{category.description}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => navigate(`/categories/edit/${category.id}`)}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => openDeleteDialog(category)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center">
-                      {t('categories.noResults')}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            columns={columns}
+            data={filteredCategories}
+            isLoading={loading}
+            enablePagination={true}
+            defaultPageSize={10}
+          />
         </CardContent>
       </Card>
 

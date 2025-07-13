@@ -15,8 +15,10 @@ import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { requestService } from "@/services/request";
 import { requestItemService } from "@/services/request/requestItemService";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function EditRequest() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient();
@@ -30,6 +32,13 @@ export default function EditRequest() {
     enabled: !!id
   });
 
+  // Récupérer les équipes assignées à la requête
+  const { data: requestTeams, isLoading: isLoadingTeams } = useQuery({
+    queryKey: ['request-teams', id],
+    queryFn: () => requestService.getRequestTeams(Number(id)),
+    enabled: !!id
+  });
+
   // Récupérer les articles de la requête 
   const { data: requestItems, isLoading: isLoadingItems } = useQuery({
     queryKey: ['request-items', id],
@@ -38,7 +47,7 @@ export default function EditRequest() {
     meta: {
       onError: (error: any) => {
         console.error("Error fetching request items in query:", error);
-        toast.error("Erreur lors de la récupération des produits de la requête");
+        toast.error(t('request.errorUpdating'));
       }
     }
   });
@@ -64,7 +73,7 @@ export default function EditRequest() {
       const formattedProducts = items.map((item: any) => {
         return {
           id: item.inventory_item_id,
-          name: item.inventory_item?.name || "Produit inconnu",
+          name: item.inventory_item?.name || t('common.unknown'),
           description: item.inventory_item?.description || "",
           quantity: item.inventory_item?.quantity || 0,
           requestedQuantity: item.quantity || 1,
@@ -76,7 +85,7 @@ export default function EditRequest() {
       setSelectedProducts(formattedProducts);
     } catch (error) {
       console.error("Error processing request items:", error);
-      toast.error("Erreur lors du traitement des produits");
+      toast.error(t('request.errorUpdating'));
     } finally {
       setLoadingProducts(false);
     }
@@ -89,7 +98,6 @@ export default function EditRequest() {
       // Format data for Supabase
       const requestData = {
         client_id: parseInt(data.clientId),
-        team_id: data.teamId ? parseInt(data.teamId) : null,
         status: data.status,
         priority: data.priority,
         description: data.description,
@@ -101,6 +109,13 @@ export default function EditRequest() {
 
       // Update the request in Supabase
       await requestService.updateRequest(Number(id), requestData);
+      
+      // Update multiple teams assignment
+      if (data.teamIds && data.teamIds.length > 0) {
+        console.log("Updating teams:", data.teamIds);
+        const teamIdsAsNumbers = data.teamIds.map((id: string) => parseInt(id));
+        await requestService.assignMultipleTeamsToRequest(Number(id), teamIdsAsNumbers);
+      }
       
       // Clear existing request items first
       await requestItemService.clearRequestItems(Number(id));
@@ -130,12 +145,13 @@ export default function EditRequest() {
       queryClient.invalidateQueries({ queryKey: ['requests'] });
       queryClient.invalidateQueries({ queryKey: ['request', id] });
       queryClient.invalidateQueries({ queryKey: ['request-items', id] });
+      queryClient.invalidateQueries({ queryKey: ['request-teams', id] });
       
-      toast.success("Requête mise à jour avec succès");
+      toast.success(t('request.updateSuccess'));
       navigate("/requests");
     } catch (error) {
       console.error('Error updating request:', error);
-      toast.error("Erreur lors de la mise à jour de la requête");
+      toast.error(t('request.errorUpdating'));
     }
   };
 
@@ -152,14 +168,14 @@ export default function EditRequest() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Request Not Found</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t('pages.notFound.title')}</h1>
             <p className="text-muted-foreground">
-              The request you're looking for doesn't exist
+              {t('pages.notFound.description')}
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/requests")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Requests
+            {t('header.backToRequests')}
           </Button>
         </div>
       </div>
@@ -167,11 +183,12 @@ export default function EditRequest() {
   }
 
   console.log("Selected products for form:", selectedProducts);
+  console.log("Request teams:", requestTeams);
 
   // Préparer les données pour le formulaire
   const initialData = {
     clientId: request.client_id?.toString(),
-    teamId: request.team_id?.toString(),
+    teamIds: requestTeams ? requestTeams.map((rt: any) => rt.team_id.toString()) : [],
     volunteerId: request.request_volunteers?.[0]?.volunteer_id?.toString(),
     status: request.status,
     scheduled_at: request.scheduled_at ? new Date(request.scheduled_at) : undefined,
@@ -190,18 +207,18 @@ export default function EditRequest() {
   return (
     <div className="max-w-6xl mx-auto space-y-6 p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Modifier la Requête #{id}</h1>
+        <h1 className="text-2xl font-semibold">{t('actions.update')} {t('common.request')} #{id}</h1>
         <Button variant="outline" onClick={() => navigate("/requests")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour aux Requêtes
+          {t('header.backToRequests')}
         </Button>
       </div>
 
       <Card className="border-t-4 border-t-hwf-purple shadow-md">
         <CardHeader>
-          <CardTitle>Détails de la Requête</CardTitle>
+          <CardTitle>{t('pages.requests.information')}</CardTitle>
           <CardDescription>
-            Modifiez le formulaire ci-dessous avec les détails de la requête
+            {t('pages.requests.manage')}
           </CardDescription>
         </CardHeader>
         <CardContent>

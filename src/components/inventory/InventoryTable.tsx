@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 interface InventoryTableProps {
   items: any[];
@@ -54,85 +56,84 @@ export function InventoryTable({ items, onDelete, onStockControl, loading }: Inv
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin h-8 w-8 border-4 border-hwf-purple border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="text-center py-8">
-        {t('inventory.noItems')}
-      </div>
-    );
-  }
+  const columns: ColumnDef<any>[] = [
+    {
+      accessorKey: "name",
+      header: t('inventory.item'),
+    },
+    {
+      accessorKey: "inventory_categories.name",
+      header: t('inventory.category'),
+      cell: ({ row }) => row.original.inventory_categories?.name || '-',
+    },
+    {
+      accessorKey: "condition",
+      header: t('inventory.condition'),
+    },
+    {
+      accessorKey: "quantity",
+      header: t('inventory.quantity'),
+    },
+    {
+      accessorKey: "is_available",
+      header: t('common.status'),
+      cell: ({ row }) => getStatusBadge(row.original.is_available),
+    },
+    {
+      accessorKey: "location",
+      header: t('inventory.location'),
+    },
+    {
+      id: "actions",
+      header: t('common.actions'),
+      cell: ({ row }) => (
+        <div className="flex justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => navigate(`/inventory/view/${row.original.id}`)}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => navigate(`/inventory/edit/${row.original.id}`)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => onStockControl(row.original)}
+          >
+            <BarChart3 className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={() => handleDelete(row.original.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('inventory.item')}</TableHead>
-            <TableHead>{t('inventory.category')}</TableHead>
-            <TableHead>{t('inventory.condition')}</TableHead>
-            <TableHead>{t('inventory.quantity')}</TableHead>
-            <TableHead>{t('common.status')}</TableHead>
-            <TableHead>{t('inventory.location')}</TableHead>
-            <TableHead className="text-right">{t('common.actions')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell>{item.name}</TableCell>
-              <TableCell>{item.inventory_categories?.name}</TableCell>
-              <TableCell>{item.condition}</TableCell>
-              <TableCell>{item.quantity}</TableCell>
-              <TableCell>{getStatusBadge(item.is_available)}</TableCell>
-              <TableCell>{item.location}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={() => navigate(`/inventory/view/${item.id}`)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={() => navigate(`/inventory/edit/${item.id}`)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={() => onStockControl(item)}
-                  >
-                    <BarChart3 className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={() => handleDelete(item.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <DataTable
+        columns={columns}
+        data={items}
+        isLoading={loading}
+        enablePagination={true}
+        defaultPageSize={10}
+      />
 
       <AlertDialog open={!!itemToDelete} onOpenChange={() => setItemToDelete(null)}>
         <AlertDialogContent>

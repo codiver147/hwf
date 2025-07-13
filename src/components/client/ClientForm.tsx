@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { countries, languages } from "@/utils/countries";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const statusInCanadaType = z.enum(["permanent-resident", "refugee", "student-visa", "temporary-resident"]);
 
@@ -30,6 +32,7 @@ const clientSchema = z.object({
   postalCode: z.string().optional(),
   languagesSpoken: z.string().optional(),
   countryOfOrigin: z.string().min(1, "Country of origin is required"),
+  referenceOrganization: z.string().optional(),
   statusInCanada: statusInCanadaType,
   housingType: z.string(),
   hasTransportation: z.boolean().default(false),
@@ -47,6 +50,7 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ defaultValues, onSubmit, isEditing = false }: ClientFormProps) {
+  const { language, t } = useLanguage();
   const form = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
@@ -65,6 +69,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
       numberOfAdults: 1,
       numberOfChildren: 0,
       childrenAges: "",
+      referenceOrganization: "",
       ...defaultValues,
     },
   });
@@ -78,7 +83,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name*</FormLabel>
+                <FormLabel>{t('client.firstName')}*</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter first name" {...field} className="bg-white" />
                 </FormControl>
@@ -91,7 +96,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Name*</FormLabel>
+                <FormLabel>{t('client.lastName')}*</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter last name" {...field} className="bg-white" />
                 </FormControl>
@@ -104,7 +109,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t('client.email')}</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter email address" type="email" {...field} className="bg-white" />
                 </FormControl>
@@ -117,7 +122,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone</FormLabel>
+                <FormLabel>{t('client.phone')}</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter phone number" {...field} className="bg-white" />
                 </FormControl>
@@ -130,10 +135,21 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="countryOfOrigin"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Country of Origin*</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter country of origin" {...field} className="bg-white" />
-                </FormControl>
+                <FormLabel>{t('client.countryOfOrigin')}*</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select country of origin" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
+                    {countries.map((country) => (
+                      <SelectItem key={country.code} value={country.name.en}>
+                        {country.name[language] || country.name.en}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -143,10 +159,21 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="languagesSpoken"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Languages Spoken</FormLabel>
-                <FormControl>
-                  <Input placeholder="E.g., English, Arabic, French" {...field} className="bg-white" />
-                </FormControl>
+                <FormLabel>{t('client.languagesSpoken')}</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select primary language" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-[200px] overflow-y-auto">
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.name.en}>
+                        {lang.name[language] || lang.name.en}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -156,7 +183,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="statusInCanada"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status in Canada*</FormLabel>
+                <FormLabel>{t('client.statusInCanada')}*</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="bg-white">
@@ -164,10 +191,10 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="permanent-resident">Permanent Resident</SelectItem>
-                    <SelectItem value="refugee">Refugee</SelectItem>
-                    <SelectItem value="student-visa">Student Visa</SelectItem>
-                    <SelectItem value="temporary-resident">Temporary Resident</SelectItem>
+                    <SelectItem value="permanent-resident">{t('status.permanentResident')}</SelectItem>
+                    <SelectItem value="refugee">{t('status.refugee')}</SelectItem>
+                    <SelectItem value="student-visa">{t('status.studentVisa')}</SelectItem>
+                    <SelectItem value="temporary-resident">{t('status.temporaryResident')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -179,7 +206,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
             name="housingType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Housing Type*</FormLabel>
+                <FormLabel>{t('client.housingType')}*</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="bg-white">
@@ -187,13 +214,27 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Apartment">Apartment</SelectItem>
-                    <SelectItem value="House">House</SelectItem>
-                    <SelectItem value="Townhouse">Townhouse</SelectItem>
-                    <SelectItem value="Basement Apartment">Basement Apartment</SelectItem>
-                    <SelectItem value="Temporary">Temporary</SelectItem>
+                    <SelectItem value="Apartment">{t('housing.apartment')}</SelectItem>
+                    <SelectItem value="House">{t('housing.house')}</SelectItem>
+                    <SelectItem value="Townhouse">{t('housing.townhouse')}</SelectItem>
+                    <SelectItem value="Basement Apartment">{t('housing.basementApartment')}</SelectItem>
+                    <SelectItem value="Temporary">{t('housing.temporary')}</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="referenceOrganization"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('client.referenceOrganization')}</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter reference organization" {...field} className="bg-white" />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -202,14 +243,14 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
 
         {/* Address information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Address Information</h3>
+          <h3 className="text-lg font-medium">{t('client.address')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <FormField
               control={form.control}
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Street Address</FormLabel>
+                  <FormLabel>{t('client.address')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter street address" {...field} className="bg-white" />
                   </FormControl>
@@ -222,7 +263,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>City</FormLabel>
+                  <FormLabel>{t('client.city')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter city" {...field} className="bg-white" />
                   </FormControl>
@@ -235,7 +276,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
               name="postalCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Postal Code</FormLabel>
+                  <FormLabel>{t('client.postalCode')}</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter postal code" {...field} className="bg-white" />
                   </FormControl>
@@ -248,14 +289,14 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
 
         {/* Household Information */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Household Information</h3>
+          <h3 className="text-lg font-medium">Informations du ménage</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <FormField
               control={form.control}
               name="numberOfAdults"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Number of Adults</FormLabel>
+                  <FormLabel>{t('client.numberOfAdults')}</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -274,7 +315,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
               name="numberOfChildren"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Number of Children</FormLabel>
+                  <FormLabel>{t('client.numberOfChildren')}</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -293,7 +334,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
               name="childrenAges"
               render={({ field }) => (
                 <FormItem className="col-span-2">
-                  <FormLabel>Children's Ages</FormLabel>
+                  <FormLabel>{t('client.childrenAges')}</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="E.g., 2, 5, 10 years old" 
@@ -323,7 +364,7 @@ export function ClientForm({ defaultValues, onSubmit, isEditing = false }: Clien
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Has Transportation</FormLabel>
+                <FormLabel>{t('client.hasTransportation')}</FormLabel>
                 <FormDescription>Check if the client has access to their own transportation</FormDescription>
               </div>
             </FormItem>

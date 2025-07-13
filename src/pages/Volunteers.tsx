@@ -7,6 +7,7 @@ import { columns } from "@/components/volunteer/columns";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -52,28 +53,38 @@ export default function Volunteers() {
         </Button>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            {volunteers.length} {t('nav.volunteers')}
-          </span>
-        </div>
-        <div className="w-64">
-          <Input
-            placeholder={`${t('actions.search')}...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white"
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                {t('nav.volunteers')}
+              </CardTitle>
+              <CardDescription>
+                {volunteers.length} {t('nav.volunteers')} au total
+              </CardDescription>
+            </div>
+            <div className="w-64">
+              <Input
+                placeholder={`${t('actions.search')}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            data={filteredVolunteers}
+            isLoading={isLoading}
+            enablePagination={true}
+            defaultPageSize={10}
           />
-        </div>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={filteredVolunteers}
-        isLoading={isLoading}
-      />
+        </CardContent>
+      </Card>
     </div>
   );
 }

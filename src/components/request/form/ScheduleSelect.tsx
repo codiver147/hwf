@@ -6,11 +6,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function ScheduleSelect({ form }: { form: any }) {
+  const { t, language } = useLanguage();
   const date = form.watch("date");
   const time = form.watch("time");
 
@@ -29,6 +31,8 @@ export function ScheduleSelect({ form }: { form: any }) {
     }
   }, [date, time, form]);
 
+  const dateLocale = language === 'fr' ? fr : enUS;
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <FormField
@@ -36,7 +40,7 @@ export function ScheduleSelect({ form }: { form: any }) {
         name="date"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Date de la requête</FormLabel>
+            <FormLabel>{t('request.date')}</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -48,9 +52,9 @@ export function ScheduleSelect({ form }: { form: any }) {
                     )}
                   >
                     {field.value ? (
-                      format(field.value, "P", { locale: fr })
+                      format(field.value, "P", { locale: dateLocale })
                     ) : (
-                      <span>Sélectionner une date</span>
+                      <span>{t('request.selectDate')}</span>
                     )}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
@@ -75,7 +79,7 @@ export function ScheduleSelect({ form }: { form: any }) {
         name="time"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Heure</FormLabel>
+            <FormLabel>{t('request.time')}</FormLabel>
             <FormControl>
               <Input
                 type="time"

@@ -17,14 +17,14 @@ export default function AddClient() {
     try {
       await createClient(data);
       toast({
-        title: "Client créé avec succès",
-        description: "Le nouveau client a été ajouté à la base de données",
+        title: t('client.addSuccess'),
+        description: t('client.addSuccess'),
       });
       navigate("/clients");
     } catch (error: any) {
       toast({
-        title: "Erreur lors de la création du client",
-        description: error.message || "Une erreur est survenue. Veuillez réessayer.",
+        title: t('client.errorAdding'),
+        description: error.message || t('client.errorAdding'),
         variant: "destructive",
       });
     }
@@ -50,7 +50,7 @@ export default function AddClient() {
         <CardHeader>
           <CardTitle>{t('pages.clients.information')}</CardTitle>
           <CardDescription>
-            {t('pages.clients.information')}
+            {t('pages.clients.manage')}
           </CardDescription>
         </CardHeader>
         <CardContent>

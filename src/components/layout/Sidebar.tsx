@@ -36,7 +36,16 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { t } = useLanguage();
+  
+  // Add safety check for useLanguage hook
+  let t;
+  try {
+    const { t: translateFn } = useLanguage();
+    t = translateFn;
+  } catch (error) {
+    // Fallback if LanguageProvider is not available
+    t = (key: string) => key;
+  }
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -64,8 +73,7 @@ export function Sidebar() {
       >
         {/* Logo area */}
         <div className="px-6 py-8 bg-hwf-purple text-white">
-          <h1 className="text-2xl font-bold">Helping With Furniture</h1>
-          <p className="text-sm opacity-80">Management System</p>
+          <h1 className="text-2xl font-bold">{t('dashboard.overview')}</h1>
         </div>
 
         {/* Navigation */}
@@ -103,7 +111,7 @@ export function Sidebar() {
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 bg-gray-50">
           <p className="text-xs text-center text-gray-500">
-            &copy; {new Date().getFullYear()} Helping With Furniture
+            &copy; {new Date().getFullYear()} {t('dashboard.overview')}
           </p>
         </div>
       </div>

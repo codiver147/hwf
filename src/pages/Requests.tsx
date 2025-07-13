@@ -25,8 +25,10 @@ import {
 import { RequestStats } from "@/components/request/RequestStats";
 import { SearchToolbar } from "@/components/request/SearchToolbar";
 import { RequestList } from "@/components/request/RequestList";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-interface Request {
+// Updated interface to match actual Supabase response
+interface RequestWithDetails {
   id: number;
   client_id?: number;
   team_id?: number;
@@ -40,26 +42,34 @@ interface Request {
   clients?: {
     first_name?: string;
     last_name?: string;
-  };
+  } | null;
   teams?: {
     name?: string;
-  };
+  } | null;
   request_volunteers?: Array<{
     volunteer_id?: number;
     volunteers?: {
       first_name?: string;
       last_name?: string;
-    };
+    } | null;
   }>;
   request_items?: Array<any>;
+  request_teams?: Array<{
+    team_id: number;
+    teams: {
+      id: number;
+      name: string;
+    };
+  }>;
 }
 
 export default function Requests() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
-  const [requestToDelete, setRequestToDelete] = useState<Request | null>(null);
+  const [requestToDelete, setRequestToDelete] = useState<RequestWithDetails | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { data: requests = [], isLoading } = useQuery({
@@ -67,12 +77,13 @@ export default function Requests() {
     queryFn: requestService.getRequests,
   });
 
-  const filteredRequests = Array.isArray(requests) ? requests.filter((request: Request) => {
+  const filteredRequests = Array.isArray(requests) ? requests.filter((request: any) => {
     const searchStr = searchQuery.toLowerCase();
     return (
       request?.clients?.first_name?.toLowerCase().includes(searchStr) ||
       request?.clients?.last_name?.toLowerCase().includes(searchStr) ||
       request?.teams?.name?.toLowerCase().includes(searchStr) ||
+      request?.request_teams?.some((rt: any) => rt.teams?.name?.toLowerCase().includes(searchStr)) ||
       request.status?.toLowerCase().includes(searchStr)
     );
   }) : [];
@@ -85,14 +96,14 @@ export default function Requests() {
       queryClient.invalidateQueries({ queryKey: ['requests'] });
       
       toast({
-        title: "Request Deleted",
-        description: "The request has been successfully deleted.",
+        title: t('request.deleteSuccess'),
+        description: t('request.deleteSuccess'),
       });
     } catch (error) {
       console.error('Error deleting request:', error);
       toast({
-        title: "Error",
-        description: "Failed to delete the request",
+        title: t('common.error'),
+        description: t('request.errorDeleting'),
         variant: "destructive",
       });
     }
@@ -117,9 +128,9 @@ export default function Requests() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Team Requests</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('pages.requests.title')}</h1>
           <p className="text-muted-foreground">
-            Manage team requests and assignments
+            {t('pages.requests.manage')}
           </p>
         </div>
         <Button 
@@ -127,7 +138,7 @@ export default function Requests() {
           onClick={() => navigate("/requests/add")}
         >
           <ClipboardPlus className="mr-2 h-4 w-4" />
-          New Request
+          {t('pages.requests.addNew')}
         </Button>
       </div>
 
@@ -135,7 +146,7 @@ export default function Requests() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Request List</CardTitle>
+          <CardTitle>{t('request.list')}</CardTitle>
         </CardHeader>
         <CardContent>
           <SearchToolbar 
@@ -159,19 +170,19 @@ export default function Requests() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t('common.areYouSure')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will permanently delete {requestToDelete?.id} {requestToDelete?.status && `(${requestToDelete.status})`} from the requests list.
-              This action cannot be undone.
+              {t('request.deleteConfirmation')} #{requestToDelete?.id} {requestToDelete?.status && `(${requestToDelete.status})`}.
+              {t('inventory.deleteConfirmation')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteRequest}
               className="bg-red-500 hover:bg-red-600"
             >
-              Delete
+              {t('actions.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
